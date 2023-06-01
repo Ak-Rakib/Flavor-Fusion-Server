@@ -27,22 +27,31 @@ const client = new MongoClient(uri, {
 async function run() {
     const menuCollection = client.db("Flavor_Fusion").collection("menu");
     const reviewsCollection = client.db("Flavor_Fusion").collection("reviews");
+    const cartCollection = client.db("Flavor_Fusion").collection("cart");
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
 
-    // For Menu
+    // For Menu---------------
     app.get("/menu", async(req, res) => {
         const result = await menuCollection.find().toArray();
         res.send(result);
     });
 
 
-    // For reviews
+    // For reviews-------------
     app.get("/reviews", async(req, res) => {
         const result = await reviewsCollection.find().toArray();
         res.send(result);
+    });
+
+
+    // For cart----------------
+    app.post("/cart", async(req, res) => {
+      const item = req.body;
+      const result = await cartCollection.insertOne(item);
+      res.send(result);
     });
 
 
