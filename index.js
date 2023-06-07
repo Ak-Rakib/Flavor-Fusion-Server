@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 
 app.use(cors());
@@ -25,34 +25,63 @@ const client = new MongoClient(uri, {
 });
 
 async function run() {
-    const menuCollection = client.db("Flavor_Fusion").collection("menu");
-    const reviewsCollection = client.db("Flavor_Fusion").collection("reviews");
-    const cartCollection = client.db("Flavor_Fusion").collection("cart");
+  const menuCollection = client.db("Flavor_Fusion").collection("menu");
+  const reviewsCollection = client.db("Flavor_Fusion").collection("reviews");
+  const cartCollection = client.db("Flavor_Fusion").collection("cart");
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
 
     // For Menu---------------
-    app.get("/menu", async(req, res) => {
-        const result = await menuCollection.find().toArray();
-        res.send(result);
+    app.get("/menu", async (req, res) => {
+      const result = await menuCollection.find().toArray();
+      res.send(result);
     });
 
 
     // For reviews-------------
-    app.get("/reviews", async(req, res) => {
-        const result = await reviewsCollection.find().toArray();
-        res.send(result);
+    app.get("/reviews", async (req, res) => {
+      const result = await reviewsCollection.find().toArray();
+      res.send(result);
     });
 
 
     // For cart----------------
-    app.post("/cart", async(req, res) => {
+    app.get("/cart", async(req, res) => {
+      const result = await cartCollection.find().toArray();
+      res.send(result);
+    });
+
+
+    app.get("/cart", async (req, res) => {
+      const email = req.query.email;
+      if (!email) {
+        res.send([]);
+      } else {
+        const query = { email: email }
+        const result = await cartCollection.find(query).toArray();
+        res.send(result);
+      }
+
+    });
+
+
+    app.post("/cart", async (req, res) => {
       const item = req.body;
       const result = await cartCollection.insertOne(item);
       res.send(result);
     });
+
+
+    app.delete("/cart/:id", async(req, res) => {
+      const id = (req.params.id);
+      console.log(id);
+      const query = {_id: new ObjectId(id)}
+      const result = await cartCollection.deleteOne(query);
+      console.log(result)
+      res.send(result);
+    })
 
 
     // Send a ping to confirm a successful connection
@@ -67,9 +96,9 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-    res.send('server site is running');
+  res.send('server site is running');
 });
 
 app.listen(port, () => {
-    console.log(`is Updating ${port}`)
+  console.log(`is Updating ${port}`)
 });
